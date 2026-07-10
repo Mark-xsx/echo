@@ -1,0 +1,14 @@
+## Day 3
+
+今天学会了：
+- 用 FastAPI 写后端接口
+- 用 Hypercorn 启动服务器（替代 uvicorn）
+- 使用路径参数
+
+今天踩的坑：
+- uvicorn 在 Windows 上启动失败，不报错不监听端口
+- 用 python -m http.server 测试端口确认网络正常
+- 换 Hypercorn 解决
+
+明天准备做：
+- 数据库入门
