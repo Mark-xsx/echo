@@ -1,11 +1,20 @@
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from supabase import create_client, Client
 
+# 加载 .env 文件（默认从当前目录或父目录找）
+load_dotenv()
+
 app = FastAPI()
 
-# 用你自己的 Project URL 和 anon key 替换下面两个字符串
-SUPABASE_URL = "https://svwpscnnnbghmlqoxtoi.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2d3BzY25ubmJnaG1scW94dG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2NDIxOTAsImV4cCI6MjA5OTIxODE5MH0.bblSB15TH0c8jvRIlIy_XUlzmWPA45ctDVpaqgxI_88"
+# 从环境变量读取配置，不再硬编码
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+# 检查是否成功读取（可选，帮助调试）
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise ValueError("请在 .env 文件中设置 SUPABASE_URL 和 SUPABASE_KEY")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -15,8 +24,11 @@ def read_root():
 
 @app.post("/echo")
 def create_echo(content: str):
-    data = supabase.table("echoes").insert({"content": content}).execute()
-    return {"message": "已替你保管"}
+    try:
+        data = supabase.table("echoes").insert({"content": content}).execute()
+        return {"message": "已替你保管"}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.get("/echoes")
 def get_all_echoes():
