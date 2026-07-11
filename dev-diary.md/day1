@@ -1,0 +1,12 @@
+# Echo 
+## 2026-07-09
+
+今天学会了：
+- 初始化 Git 仓库并推送到 GitHub
+- 用 SSH 密钥解决 Git 网络连接问题
+
+今天踩的坑：
+- Git HTTPS 连接报 getaddrinfo 错误，折腾了很久 DNS，最后用 SSH 解决
+
+明天准备做：
+- Python 回顾，为 FastAPI 做准备

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echo · 回声</title>
+</head>
+<body>
+    <h1>今天，你想告诉未来什么？</h1>
+    
+    <input type="text" id="echoInput" placeholder="写一句话...">
+    <button onclick="sendEcho()">留给未来</button>
+    
+    <hr>
+    
+    <h2>所有回声</h2>
+    <div id="echoList"></div>
+
+    <script>
+        async function sendEcho() {
+            const content = document.getElementById('echoInput').value;
+            if (!content) return alert('请写一句话吧');
+            
+            // 向后端发送 POST 请求
+            const response = await fetch('http://127.0.0.1:8000/echo?content=' + encodeURIComponent(content), {
+                method: 'POST'
+            });
+            const data = await response.json();
+            alert(data.message || data.error);
+            
+            // 重新加载回声列表
+            loadEchoes();
+        }
+
+        async function loadEchoes() {
+            const response = await fetch('http://127.0.0.1:8000/echoes');
+            const data = await response.json();
+            const list = document.getElementById('echoList');
+            list.innerHTML = data.echoes.map(e => `<p>${e.content} <small>(${e.created_at})</small></p>`).join('');
+        }
+
+        // 页面加载时自动获取回声列表
+        loadEchoes();
+    </script>
+</body>
+</html>

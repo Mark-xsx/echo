@@ -2,11 +2,19 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from supabase import create_client, Client
+from fastapi.middleware.cors import CORSMiddleware
 
 # 加载 .env 文件（默认从当前目录或父目录找）
 load_dotenv()
 
 app = FastAPI()
+# 允许所有来源的跨域请求（开发阶段用，生产环境需要限制）
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 从环境变量读取配置，不再硬编码
 SUPABASE_URL = os.getenv("SUPABASE_URL")
