@@ -1,14 +1,15 @@
 import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
-from supabase import create_client, Client
 from fastapi.middleware.cors import CORSMiddleware
+from supabase import create_client, Client
 
-# 加载 .env 文件（默认从当前目录或父目录找）
+# 加载 .env 文件
 load_dotenv()
 
 app = FastAPI()
-# 允许所有来源的跨域请求（开发阶段用，生产环境需要限制）
+
+# 允许所有来源的跨域请求（开发阶段用）
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,11 +17,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 从环境变量读取配置，不再硬编码
+# 从环境变量读取 Supabase 配置
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-# 检查是否成功读取（可选，帮助调试）
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("请在 .env 文件中设置 SUPABASE_URL 和 SUPABASE_KEY")
 
@@ -31,11 +31,13 @@ def read_root():
     return {"message": "Hello Echo"}
 
 @app.post("/echo")
-def create_echo(content: str, return_date: str = None):
+def create_echo(content: str, return_date: str = None, parent_id: int = None):
     try:
         data = {"content": content}
         if return_date:
             data["return_at"] = return_date
+        if parent_id is not None:
+            data["parent_id"] = parent_id
         supabase.table("echoes").insert(data).execute()
         return {"message": "已替你保管"}
     except Exception as e:
@@ -43,5 +45,21 @@ def create_echo(content: str, return_date: str = None):
 
 @app.get("/echoes")
 def get_all_echoes():
-    response = supabase.table("echoes").select("*").order("created_at", desc=True).execute()
+    # 只获取顶级回声（parent_id 为 NULL）
+    response = supabase.table("echoes").select("*").is_("parent_id", "null").order("created_at", desc=True).execute()
     return {"echoes": response.data}
+
+@app.get("/echo/{echo_id}")
+def get_echo_detail(echo_id: int):
+    # 获取主回声
+    main_resp = supabase.table("echoes").select("*").eq("id", echo_id).single().execute()
+    if not main_resp.data:
+        return {"error": "回声不存在"}
+    
+    # 获取所有回复（按创建时间升序）
+    replies_resp = supabase.table("echoes").select("*").eq("parent_id", echo_id).order("created_at").execute()
+    
+    return {
+        "echo": main_resp.data,
+        "replies": replies_resp.data
+    }

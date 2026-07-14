@@ -34,7 +34,9 @@ function History() {
 
       {echoes.map(echo => (
         <div key={echo.id} className="history-item">
-          <p className="history-content">{echo.content}</p>
+          <Link to={`/echo/${echo.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <p className="history-content">{echo.content}</p>
+          </Link>
           <p className="history-meta">
             {new Date(echo.created_at).toLocaleDateString('zh-CN')}
             {echo.return_at &&
