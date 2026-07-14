@@ -13,9 +13,9 @@ function TimeSelect() {
   const location = useLocation()
   const navigate = useNavigate()
   const content = location.state?.content || ''
+  const email = location.state?.email || ''
 
   const handleSelect = async (value) => {
-    // ... 原有逻辑保持不变
     if (value === 'custom') {
       const days = prompt('请输入天数：')
       if (!days) return
@@ -51,7 +51,7 @@ function TimeSelect() {
   const submitEcho = async (returnDate) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/echo?content=${encodeURIComponent(content)}&return_date=${encodeURIComponent(returnDate)}`,
+        `http://127.0.0.1:8000/echo?content=${encodeURIComponent(content)}&return_date=${encodeURIComponent(returnDate)}&email=${encodeURIComponent(email)}`,
         { method: 'POST' }
       )
       const data = await response.json()
@@ -67,7 +67,7 @@ function TimeSelect() {
 
   return (
     <div className="page-container">
-      <h2 className="page-subtitle">这封回声，将在什么时候回来？</h2>
+      <h2 className="page-subtitle">这封信，将在什么时候回到你身边？</h2>
       <div style={{ marginTop: 'var(--space-md)' }}>
         {timeOptions.map((option) => (
           <button
