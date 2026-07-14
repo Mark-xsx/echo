@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 function Home() {
   const [content, setContent] = useState('')
@@ -22,6 +22,18 @@ function Home() {
         placeholder="写一句话..."
       />
       <button onClick={handleSubmit}>留给未来</button>
+      <Link
+  to="/history"
+  style={{
+    display: 'inline-block',
+    marginTop: 24,
+    color: '#6A6A6A',
+    fontSize: 14,
+    textDecoration: 'none',
+  }}
+>
+  查看所有回声
+</Link>
     </div>
   )
 }
