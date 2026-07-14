@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import '../styles/shared.css'
 
 function Home() {
   const [content, setContent] = useState('')
@@ -7,33 +8,22 @@ function Home() {
 
   const handleSubmit = () => {
     if (content.trim() === '') return
-    // 跳转到时间选择页面，并通过 state 传递 content
     navigate('/time-select', { state: { content } })
   }
 
   return (
-    <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-      <h1>Echo</h1>
-      <p>今天，你想告诉未来什么？</p>
+    <div className="page-container">
+      <h1 className="page-title">Echo</h1>
+      <p className="page-subtitle">有些话，说给未来的自己听</p>
       <input
         type="text"
+        className="input-echo"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="写一句话..."
+        placeholder="比如：一年后的我，你好吗？"
       />
-      <button onClick={handleSubmit}>留给未来</button>
-      <Link
-  to="/history"
-  style={{
-    display: 'inline-block',
-    marginTop: 24,
-    color: '#6A6A6A',
-    fontSize: 14,
-    textDecoration: 'none',
-  }}
->
-  查看所有回声
-</Link>
+      <button className="btn-primary" onClick={handleSubmit}>留给未来</button>
+      <Link className="link-text" to="/history">查看所有回声</Link>
     </div>
   )
 }

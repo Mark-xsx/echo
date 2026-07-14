@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
+import '../styles/shared.css'
 
 const timeOptions = [
   { label: '明天', value: 'tomorrow' },
@@ -14,8 +15,8 @@ function TimeSelect() {
   const content = location.state?.content || ''
 
   const handleSelect = async (value) => {
+    // ... 原有逻辑保持不变
     if (value === 'custom') {
-      // V1 暂时用简单 prompt，后续可做日期选择器
       const days = prompt('请输入天数：')
       if (!days) return
       const returnDate = new Date()
@@ -47,46 +48,32 @@ function TimeSelect() {
     await submitEcho(returnDate.toISOString())
   }
 
- const submitEcho = async (returnDate) => {
-  try {
-    const response = await fetch(
-      `http://127.0.0.1:8000/echo?content=${encodeURIComponent(content)}&return_date=${encodeURIComponent(returnDate)}`,
-      {
-        method: 'POST',
+  const submitEcho = async (returnDate) => {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/echo?content=${encodeURIComponent(content)}&return_date=${encodeURIComponent(returnDate)}`,
+        { method: 'POST' }
+      )
+      const data = await response.json()
+      if (data.message) {
+        navigate('/success', { state: { message: data.message } })
+      } else {
+        alert('出错了：' + (data.error || JSON.stringify(data)))
       }
-    )
-    const data = await response.json()
-    if (data.message) {
-      navigate('/success', { state: { message: data.message } })
-    } else {
-      alert('出错了：' + (data.error || JSON.stringify(data)))
+    } catch (error) {
+      alert('网络错误，请确认后端已启动')
     }
-  } catch (error) {
-    alert('网络错误，请确认后端已启动')
   }
-}
 
   return (
-    <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-      <h2>这封回声，将在什么时候回来？</h2>
-      <div style={{ marginTop: '32px' }}>
+    <div className="page-container">
+      <h2 className="page-subtitle">这封回声，将在什么时候回来？</h2>
+      <div style={{ marginTop: 'var(--space-md)' }}>
         {timeOptions.map((option) => (
           <button
             key={option.value}
+            className="btn-secondary"
             onClick={() => handleSelect(option.value)}
-            style={{
-              display: 'block',
-              width: '100%',
-              maxWidth: '360px',
-              height: '48px',
-              margin: '8px auto',
-              fontSize: '16px',
-              border: '1px solid #E0E0E0',
-              borderRadius: '12px',
-              backgroundColor: 'white',
-              color: '#2E2E2E',
-              cursor: 'pointer',
-            }}
           >
             {option.label}
           </button>
