@@ -13,11 +13,58 @@ function TimeSelect() {
   const navigate = useNavigate()
   const content = location.state?.content || ''
 
-  const handleSelect = (value) => {
-    // 暂时先弹窗确认，Day 11 再连接后端
-    alert(`你选择的是：${value}\n内容：${content}`)
-    // 未来这里会 POST 到后端
+  const handleSelect = async (value) => {
+    if (value === 'custom') {
+      // V1 暂时用简单 prompt，后续可做日期选择器
+      const days = prompt('请输入天数：')
+      if (!days) return
+      const returnDate = new Date()
+      returnDate.setDate(returnDate.getDate() + parseInt(days))
+      await submitEcho(returnDate.toISOString())
+      return
+    }
+
+    const now = new Date()
+    let returnDate = new Date(now)
+
+    switch (value) {
+      case 'tomorrow':
+        returnDate.setDate(now.getDate() + 1)
+        break
+      case 'week':
+        returnDate.setDate(now.getDate() + 7)
+        break
+      case 'month':
+        returnDate.setMonth(now.getMonth() + 1)
+        break
+      case 'year':
+        returnDate.setFullYear(now.getFullYear() + 1)
+        break
+      default:
+        break
+    }
+
+    await submitEcho(returnDate.toISOString())
   }
+
+ const submitEcho = async (returnDate) => {
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/echo?content=${encodeURIComponent(content)}&return_date=${encodeURIComponent(returnDate)}`,
+      {
+        method: 'POST',
+      }
+    )
+    const data = await response.json()
+    if (data.message) {
+      navigate('/success', { state: { message: data.message } })
+    } else {
+      alert('出错了：' + (data.error || JSON.stringify(data)))
+    }
+  } catch (error) {
+    alert('网络错误，请确认后端已启动')
+  }
+}
 
   return (
     <div style={{ textAlign: 'center', padding: '40px 20px' }}>

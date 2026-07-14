@@ -31,9 +31,12 @@ def read_root():
     return {"message": "Hello Echo"}
 
 @app.post("/echo")
-def create_echo(content: str):
+def create_echo(content: str, return_date: str = None):
     try:
-        data = supabase.table("echoes").insert({"content": content}).execute()
+        data = {"content": content}
+        if return_date:
+            data["return_at"] = return_date
+        supabase.table("echoes").insert(data).execute()
         return {"message": "已替你保管"}
     except Exception as e:
         return {"error": str(e)}
