@@ -1,25 +1,15 @@
-import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import TimeSelect from './pages/TimeSelect'
 
 function App() {
-  const [content, setContent] = useState('')
-
-  const handleSubmit = () => {
-    if (content.trim() === '') return
-    alert('你写的是：' + content)
-  }
-
   return (
-    <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-      <h1>Echo</h1>
-      <p>今天，你想告诉未来什么？</p>
-      <input
-        type="text"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="写一句话..."
-      />
-      <button onClick={handleSubmit}>留给未来</button>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/time-select" element={<TimeSelect />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
