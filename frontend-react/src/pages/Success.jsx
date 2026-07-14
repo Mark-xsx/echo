@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import './Success.css' // 我们马上创建这个样式文件
 
 function Success() {
   const location = useLocation()
@@ -9,14 +10,14 @@ function Success() {
   useEffect(() => {
     const timer = setTimeout(() => {
       navigate('/')
-    }, 2000)
+    }, 2500) // 延长到 2.5 秒，让动画更从容
     return () => clearTimeout(timer)
   }, [navigate])
 
   return (
-    <div style={{ textAlign: 'center', padding: '40px 20px', marginTop: '80px' }}>
-      <div style={{ fontSize: '48px', marginBottom: '16px' }}>✓</div>
-      <p style={{ fontSize: '18px', color: '#6A6A6A' }}>{message}</p>
+    <div className="success-container">
+      <div className="checkmark">✓</div>
+      <p className="success-message">{message}</p>
     </div>
   )
 }
