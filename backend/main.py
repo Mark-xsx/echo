@@ -1,16 +1,17 @@
 import os
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client, Client
 import resend
 
-# 加载 .env 文件
+# 加载 .env 文件（本地开发用，生产环境 Render 会直接注入环境变量）
 load_dotenv()
 
 app = FastAPI()
 
-# 允许所有来源的跨域请求（开发阶段用）
+# CORS 配置（允许所有来源，部署后可限制为前端域名）
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,16 +19,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 从环境变量读取 Supabase 配置
+# 初始化 Supabase
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("请在 .env 文件中设置 SUPABASE_URL 和 SUPABASE_KEY")
-
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# 初始化 Resend API Key
+# 初始化 Resend
 resend.api_key = os.getenv("RESEND_API_KEY")
 if not resend.api_key:
     raise ValueError("请在 .env 文件中设置 RESEND_API_KEY")
@@ -53,20 +52,16 @@ def create_echo(content: str, return_date: str = None, parent_id: int = None, em
 
 @app.get("/echoes")
 def get_all_echoes():
-    # 只获取顶级回声（parent_id 为 NULL）
+    # 只返回顶级回声（非回复）
     response = supabase.table("echoes").select("*").is_("parent_id", "null").order("created_at", desc=True).execute()
     return {"echoes": response.data}
 
 @app.get("/echo/{echo_id}")
 def get_echo_detail(echo_id: int):
-    # 获取主回声
     main_resp = supabase.table("echoes").select("*").eq("id", echo_id).single().execute()
     if not main_resp.data:
         return {"error": "回声不存在"}
-    
-    # 获取所有回复（按创建时间升序）
     replies_resp = supabase.table("echoes").select("*").eq("parent_id", echo_id).order("created_at").execute()
-    
     return {
         "echo": main_resp.data,
         "replies": replies_resp.data
@@ -74,27 +69,68 @@ def get_echo_detail(echo_id: int):
 
 @app.post("/send-echo-email/{echo_id}")
 def send_echo_email(echo_id: int):
-    # 获取回声数据
+    """手动发送指定回声的邮件（测试用）"""
     echo_resp = supabase.table("echoes").select("*").eq("id", echo_id).single().execute()
     if not echo_resp.data:
         return {"error": "回声不存在"}
-    
     echo = echo_resp.data
     if not echo.get("email"):
         return {"error": "该回声没有留下邮箱"}
-    
-    # 发送邮件
     try:
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
         resend.Emails.send({
             "from": "Echo <onboarding@resend.dev>",
             "to": echo["email"],
-            "subject": "一年前，你留了一句话",
+            "subject": "你留给自己的回声，到了",
             "html": f"""
-            <p>{echo['content']}</p>
-            <p style="color:#666;">这是你留在 {echo['created_at'][:10]} 的回声</p>
-            <a href="http://localhost:5173/echo/{echo['id']}">查看详情</a>
+            <p style="font-size:18px;">{echo['content']}</p>
+            <p style="color:#666;">这是你在 {echo['created_at'][:10]} 写给未来的话。</p>
+            <a href="{frontend_url}/echo/{echo['id']}">点击查看</a>
             """
         })
+        # 标记已发送
+        supabase.table("echoes").update({"email_sent": True}).eq("id", echo_id).execute()
         return {"message": "邮件已发送"}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/cron/send-emails")
+def cron_send_emails(token: str = None):
+    """定时任务：检查到期回声并发送邮件"""
+    # 验证 token，防止未授权调用
+    expected_token = os.getenv("CRON_SECRET", "my-secret-token")
+    if token != expected_token:
+        return {"error": "Unauthorized"}
+    
+    try:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        response = supabase.table("echoes").select("*") \
+            .lte("return_at", now_iso) \
+            .eq("email_sent", False) \
+            .execute()
+        echoes = response.data or []
+
+        sent_count = 0
+        for echo in echoes:
+            if not echo.get("email"):
+                continue
+            try:
+                frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+                resend.Emails.send({
+                    "from": "Echo <onboarding@resend.dev>",
+                    "to": echo["email"],
+                    "subject": "你留给自己的回声，到了",
+                    "html": f"""
+                    <p style="font-size:18px;">{echo['content']}</p>
+                    <p style="color:#666;">这是你在 {echo['created_at'][:10]} 写给未来的话。</p>
+                    <a href="{frontend_url}/echo/{echo['id']}">点击查看</a>
+                    """
+                })
+                supabase.table("echoes").update({"email_sent": True}).eq("id", echo["id"]).execute()
+                sent_count += 1
+            except Exception as e:
+                print(f"Failed to send echo {echo['id']}: {e}")
+
+        return {"message": f"已处理 {len(echoes)} 条回声，成功发送 {sent_count} 封邮件"}
     except Exception as e:
         return {"error": str(e)}
