@@ -34,7 +34,7 @@ def send_email_via_163(to_email: str, subject: str, html_content: str) -> bool:
     sender_email = os.getenv("MAIL_USERNAME")      # 你的 163 邮箱地址
     sender_password = os.getenv("MAIL_PASSWORD")   # 163 授权码
     smtp_server = "smtp.163.com"
-    smtp_port = 465  # SSL
+    smtp_port = 587  # STARTTLS 端口
 
     if not sender_email or not sender_password:
         print("缺少 MAIL_USERNAME 或 MAIL_PASSWORD 环境变量")
@@ -46,7 +46,9 @@ def send_email_via_163(to_email: str, subject: str, html_content: str) -> bool:
     msg["Subject"] = Header(subject, "utf-8")
 
     try:
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port,timeout=10)
+        # 建立普通 SMTP 连接，然后升级为 TLS 加密
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
+        server.starttls()
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, [to_email], msg.as_string())
         server.quit()
