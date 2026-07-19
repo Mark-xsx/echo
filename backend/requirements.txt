@@ -1,0 +1,5 @@
+fastapi
+hypercorn
+supabase
+python-dotenv
+resend
