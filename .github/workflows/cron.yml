@@ -22,3 +22,4 @@ jobs:
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
         run: python .github/scripts/send_emails.py
+        #111
