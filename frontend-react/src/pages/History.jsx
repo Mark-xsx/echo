@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../styles/shared.css'
+import API_BASE from '../config'
 
 function History() {
   const [echoes, setEchoes] = useState([])
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/echoes')
-      .then(res => res.json())
-      .then(data => setEchoes(data.echoes || []))
-      .catch(() => setEchoes([]))
-  }, [])
+  fetch(`${API_BASE}/echoes`)
+     .then(res => res.json())
+     .then(data => setEchoes(data.echoes || []))
+     .catch(() => setEchoes([]))
+}, [])
 
   return (
     <div className="page-container">

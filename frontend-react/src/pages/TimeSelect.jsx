@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../styles/shared.css'
+import API_BASE from '../config'
 
 const timeOptions = [
   { label: '明天', value: 'tomorrow' },
@@ -50,10 +51,10 @@ function TimeSelect() {
 
   const submitEcho = async (returnDate) => {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/echo?content=${encodeURIComponent(content)}&return_date=${encodeURIComponent(returnDate)}&email=${encodeURIComponent(email)}`,
-        { method: 'POST' }
-      )
+     const response = await fetch(
+  `${API_BASE}/echo?content=${encodeURIComponent(content)}&return_date=${encodeURIComponent(returnDate)}&email=${encodeURIComponent(email)}`,
+  { method: 'POST' }
+)
       const data = await response.json()
       if (data.message) {
         navigate('/success', { state: { message: data.message } })
