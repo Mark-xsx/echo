@@ -2,13 +2,23 @@ name: Echo Cron - 发送到期邮件
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # 每5分钟执行一次
-  workflow_dispatch:          # 允许手动触发
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
 
 jobs:
-  trigger:
+  send:
     runs-on: ubuntu-latest
     steps:
-      - name: Call backend cron endpoint
-        run: |
-          curl -X POST "${{ secrets.BACKEND_URL }}/cron/send-emails?token=${{ secrets.CRON_SECRET }}"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install supabase
+      - name: Run send script
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        run: python .github/scripts/send_emails.py
