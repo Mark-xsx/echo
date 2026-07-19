@@ -18,11 +18,10 @@ function TimeSelect() {
   const content = location.state?.content || '';
   const email = location.state?.email || '';
 
-  // 自定义时间输入状态
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customDays, setCustomDays] = useState(0);
   const [customHours, setCustomHours] = useState(0);
-  const [customMinutes, setCustomMinutes] = useState(0);
+  const [customMinutes, setCustomMinutes] = useState(5); // 默认5分钟
 
   const handleSelect = async (value) => {
     if (value === 'custom') {
@@ -31,13 +30,12 @@ function TimeSelect() {
     }
 
     if (value === 'random') {
-  // 随机未来 1 分钟到 365 天
-  const maxMinutes = 365 * 24 * 60; // 一年的分钟数
-  const randomMinutes = Math.floor(Math.random() * (maxMinutes - 1) + 1);
-  const returnDate = new Date(Date.now() + randomMinutes * 60 * 1000);
-  await submitEcho(returnDate.toISOString());
-  return;
-}
+      const maxMinutes = 365 * 24 * 60; // 一年
+      const randomMinutes = Math.floor(Math.random() * (maxMinutes - 1) + 1);
+      const returnDate = new Date(Date.now() + randomMinutes * 60 * 1000);
+      await submitEcho(returnDate.toISOString());
+      return;
+    }
 
     const now = new Date();
     let returnDate = new Date(now);
@@ -79,25 +77,26 @@ function TimeSelect() {
     }
   };
 
-  // 自定义时间确认
   const handleCustomSubmit = () => {
     const totalMinutes =
       (Number(customDays) * 24 * 60) +
       (Number(customHours) * 60) +
       Number(customMinutes);
-    if (totalMinutes <= 0) {
-      alert('请至少设置 1 分钟后的时间');
+    if (isNaN(totalMinutes) || totalMinutes < 5) {
+      alert('请至少设置 5 分钟后的时间（系统每 5 分钟检查一次）');
       return;
     }
     const returnDate = new Date(Date.now() + totalMinutes * 60 * 1000);
     submitEcho(returnDate.toISOString());
   };
 
-  // 渲染自定义输入界面
   if (showCustomInput) {
     return (
       <div className="page-container">
         <h2 className="page-subtitle">设置你想收到回声的时间</h2>
+        <p style={{ color: 'gray', fontSize: '0.9em', margin: '8px 0' }}>
+          系统每 5 分钟检查一次，请设置至少 5 分钟后
+        </p>
         <div style={{ marginTop: 'var(--space-md)' }}>
           <div style={{ marginBottom: 'var(--space-sm)' }}>
             <label>天：</label>
@@ -124,7 +123,7 @@ function TimeSelect() {
             <label>分钟：</label>
             <input
               type="number"
-              min="0"
+              min="5"
               max="59"
               value={customMinutes}
               onChange={(e) => setCustomMinutes(e.target.value)}
@@ -146,7 +145,6 @@ function TimeSelect() {
     );
   }
 
-  // 默认选项界面
   return (
     <div className="page-container">
       <h2 className="page-subtitle">这封信，将在什么时候回到你身边？</h2>
