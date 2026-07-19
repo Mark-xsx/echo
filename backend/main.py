@@ -46,7 +46,7 @@ def send_email_via_163(to_email: str, subject: str, html_content: str) -> bool:
     msg["Subject"] = Header(subject, "utf-8")
 
     try:
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        server = smtplib.SMTP_SSL(smtp_server, smtp_port,timeout=10)
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, [to_email], msg.as_string())
         server.quit()
