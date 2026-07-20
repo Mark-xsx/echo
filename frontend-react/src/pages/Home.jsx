@@ -27,16 +27,16 @@ function Home() {
   return (
     <div className="page-container">
       <h1 className="page-title">Echo</h1>
-      <p className="page-subtitle">有些话，说给未来的自己听</p>
-      
+      <p className="page-subtitle">此刻的心事，来日方知。</p>
+
       <input
         type="text"
         className="input-echo"
         value={content}
         onChange={e => setContent(e.target.value)}
-        placeholder="比如：一年后的我，你好吗？"
+        placeholder="留下点什么，给那个还没遇见的人。"
       />
-      
+
       <input
         type="email"
         className="input-echo"
@@ -45,7 +45,7 @@ function Home() {
         placeholder="你的邮箱（用于接收回声）"
         style={{ marginTop: '12px' }}
       />
-      
+
       <button className="btn-primary" onClick={handleSubmit}>
         留给未来
       </button>
