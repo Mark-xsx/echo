@@ -19,9 +19,7 @@ function TimeSelect() {
   const email = location.state?.email || '';
 
   const [showCustomInput, setShowCustomInput] = useState(false);
-  const [customDays, setCustomDays] = useState(0);
-  const [customHours, setCustomHours] = useState(0);
-  const [customMinutes, setCustomMinutes] = useState(5); // 默认5分钟
+  const [customDays, setCustomDays] = useState(1); // 默认1天
 
   const handleSelect = async (value) => {
     if (value === 'custom') {
@@ -78,56 +76,31 @@ function TimeSelect() {
   };
 
   const handleCustomSubmit = () => {
-    const totalMinutes =
-      (Number(customDays) * 24 * 60) +
-      (Number(customHours) * 60) +
-      Number(customMinutes);
-    if (isNaN(totalMinutes) || totalMinutes < 5) {
-      alert('请至少设置 5 分钟后的时间（系统每 5 分钟检查一次）');
+    const days = Number(customDays);
+    if (isNaN(days) || days < 1) {
+      alert('请至少设置 1 天后的时间');
       return;
     }
-    const returnDate = new Date(Date.now() + totalMinutes * 60 * 1000);
+    const returnDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
     submitEcho(returnDate.toISOString());
   };
 
   if (showCustomInput) {
     return (
       <div className="page-container">
-        <h2 className="page-subtitle">设置你想收到回声的时间</h2>
+        <h2 className="page-subtitle">设置你想收到回声的天数</h2>
         <p style={{ color: 'gray', fontSize: '0.9em', margin: '8px 0' }}>
-          系统每 5 分钟检查一次，请设置至少 5 分钟后
+          请输入至少 1 天后的天数
         </p>
         <div style={{ marginTop: 'var(--space-md)' }}>
           <div style={{ marginBottom: 'var(--space-sm)' }}>
-            <label>天：</label>
+            <label>天数：</label>
             <input
               type="number"
-              min="0"
+              min="1"
               value={customDays}
               onChange={(e) => setCustomDays(e.target.value)}
-              style={{ width: '60px', padding: '4px' }}
-            />
-          </div>
-          <div style={{ marginBottom: 'var(--space-sm)' }}>
-            <label>小时：</label>
-            <input
-              type="number"
-              min="0"
-              max="23"
-              value={customHours}
-              onChange={(e) => setCustomHours(e.target.value)}
-              style={{ width: '60px', padding: '4px' }}
-            />
-          </div>
-          <div style={{ marginBottom: 'var(--space-md)' }}>
-            <label>分钟：</label>
-            <input
-              type="number"
-              min="5"
-              max="59"
-              value={customMinutes}
-              onChange={(e) => setCustomMinutes(e.target.value)}
-              style={{ width: '60px', padding: '4px' }}
+              style={{ width: '80px', padding: '4px' }}
             />
           </div>
           <button className="btn-primary" onClick={handleCustomSubmit}>
