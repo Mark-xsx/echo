@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import '../styles/shared.css'
 
 function Home() {
@@ -7,7 +7,6 @@ function Home() {
   const [email, setEmail] = useState('')
   const navigate = useNavigate()
 
-  // 自动读取已保存的邮箱
   useEffect(() => {
     const savedEmail = localStorage.getItem('echo_email')
     if (savedEmail) {
@@ -21,7 +20,6 @@ function Home() {
       alert('请填写邮箱，以便未来收到回声')
       return
     }
-    // 持久化邮箱
     localStorage.setItem('echo_email', email.trim())
     navigate('/time-select', { state: { content, email: email.trim() } })
   }
@@ -51,10 +49,6 @@ function Home() {
       <button className="btn-primary" onClick={handleSubmit}>
         留给未来
       </button>
-      
-      <Link className="link-text" to="/history">
-        查看所有回声
-      </Link>
     </div>
   )
 }
