@@ -47,7 +47,7 @@ function Home() {
       />
 
       <button className="btn-primary" onClick={handleSubmit}>
-        留给未来
+        寄出
       </button>
     </div>
   )
