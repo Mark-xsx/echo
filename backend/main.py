@@ -47,12 +47,16 @@ def get_all_echoes():
     return {"echoes": response.data}
 
 @app.get("/echo/{echo_id}")
-def get_echo_detail(echo_id: int):
+def get_echo_detail(echo_id: int, email: str = None):
     main_resp = supabase.table("echoes").select("*").eq("id", echo_id).single().execute()
     if not main_resp.data:
         return {"error": "回声不存在"}
+    echo = main_resp.data
+    # 隐私保护：必须提供匹配的邮箱，否则拒绝访问
+    if not email or echo.get("email") != email:
+        return {"error": "无权查看该回声"}
     replies_resp = supabase.table("echoes").select("*").eq("parent_id", echo_id).order("created_at").execute()
     return {
-        "echo": main_resp.data,
+        "echo": echo,
         "replies": replies_resp.data
     }

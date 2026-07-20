@@ -16,7 +16,7 @@ function TimeSelect() {
   const location = useLocation();
   const navigate = useNavigate();
   const content = location.state?.content || '';
-  const email = location.state?.email || '';
+  const email = location.state?.email || localStorage.getItem('echo_email') || '';
 
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customDays, setCustomDays] = useState(1); // 默认1天

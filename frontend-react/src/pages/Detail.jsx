@@ -9,15 +9,18 @@ function Detail() {
   const [replies, setReplies] = useState([])
   const [replyContent, setReplyContent] = useState('')
 
+  // 从 localStorage 获取当前用户邮箱
+  const email = localStorage.getItem('echo_email') || ''
+
   const fetchDetail = () => {
-    fetch(`${API_BASE}/echo/${id}`)
+    fetch(`${API_BASE}/echo/${id}?email=${encodeURIComponent(email)}`)
       .then(res => res.json())
       .then(data => {
         if (data.echo) {
           setEcho(data.echo)
           setReplies(data.replies || [])
         } else {
-          setEcho({ error: '回声不存在' })
+          setEcho({ error: data.error || '回声不存在' })
         }
       })
       .catch(() => setEcho({ error: '网络错误，请确认后端已启动' }))
